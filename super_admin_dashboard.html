@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الإدارة العليا — نور القرآن</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0e1a;
+    --surface:   #111827;
+    --surface2:  #1a2235;
+    --border:    #1e2d45;
+    --gold:      #c9a84c;
+    --gold-dim:  #7a6228;
+    --emerald:   #10b981;
+    --ruby:      #ef4444;
+    --sky:       #38bdf8;
+    --text:      #e8eaf0;
+    --muted:     #6b7a99;
+    --radius:    12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Background pattern ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(16,185,129,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    background: var(--bg);
+  }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 380px;
+    text-align: center;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    animation: fadeUp .5s ease;
+  }
+
+  .login-logo {
+    font-family: 'Amiri', serif;
+    font-size: 2.4rem;
+    color: var(--gold);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .login-sub { color: var(--muted); font-size: .85rem; margin-bottom: 32px; }
+
+  .login-box input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: .95rem;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border .2s;
+    text-align: right;
+  }
+  .login-box input:focus { border-color: var(--gold); }
+  .login-box input::placeholder { color: var(--muted); }
+
+  .btn-login {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), #a0782a);
+    border: none;
+    border-radius: var(--radius);
+    color: #0a0e1a;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 14px;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+    margin-top: 4px;
+  }
+  .btn-login:hover { opacity: .9; }
+  .btn-login:active { transform: scale(.98); }
+
+  #login-error {
+    color: var(--ruby);
+    font-size: .85rem;
+    margin-top: 12px;
+    min-height: 20px;
+  }
+
+  /* ── LAYOUT ── */
+  #app { display: none; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed;
+    top: 0; right: 0;
+    width: 240px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    z-index: 50;
+    padding: 0 0 24px;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo .arabic { font-family: 'Amiri', serif; font-size: 1.5rem; color: var(--gold); }
+  .sidebar-logo .sub { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+
+  .nav-section { padding: 16px 12px 4px; }
+  .nav-label { font-size: .68rem; color: var(--muted); font-weight: 700; letter-spacing: 1px; padding: 0 12px 8px; text-transform: uppercase; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    font-size: .9rem;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(201,168,76,.12); color: var(--gold); }
+  .nav-item .icon { font-size: 1.1rem; width: 22px; text-align: center; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px 0;
+    border-top: 1px solid var(--border);
+  }
+  .user-badge {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+  }
+  .user-avatar {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--gold), #a0782a);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 700; color: #0a0e1a;
+    flex-shrink: 0;
+  }
+  .user-info .name { font-size: .85rem; font-weight: 600; }
+  .user-info .role { font-size: .72rem; color: var(--gold); }
+
+  .btn-logout {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'Cairo', sans-serif;
+    font-size: .82rem;
+    padding: 8px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all .2s;
+  }
+  .btn-logout:hover { border-color: var(--ruby); color: var(--ruby); }
+
+  /* ── MAIN ── */
+  .main {
+    margin-right: 240px;
+    min-height: 100vh;
+    padding: 32px 36px;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    margin-bottom: 28px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .page-title { font-size: 1.6rem; font-weight: 700; }
+  .page-title span { color: var(--gold); }
+  .page-date { color: var(--muted); font-size: .82rem; }
+
+  /* ── STATS CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 20px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 4px; height: 100%;
+  }
+  .stat-card.gold::before  { background: var(--gold); }
+  .stat-card.green::before { background: var(--emerald); }
+  .stat-card.blue::before  { background: var(--sky); }
+  .stat-card.red::before   { background: var(--ruby); }
+
+  .stat-icon {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-card.gold  .stat-value { color: var(--gold); }
+  .stat-card.green .stat-value { color: var(--emerald); }
+  .stat-card.blue  .stat-value { color: var(--sky); }
+  .stat-card.red   .stat-value { color: var(--ruby); }
+  .stat-label { font-size: .8rem; color: var(--muted); }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 32px; }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 1.05rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: inline-block;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Cairo', sans-serif;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: linear-gradient(135deg, var(--gold), #a0782a); color: #0a0e1a; }
+  .btn-primary:hover { opacity: .88; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-danger { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: var(--ruby); }
+  .btn-danger:hover { background: rgba(239,68,68,.25); }
+  .btn-sm { padding: 5px 10px; font-size: .78rem; }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-align: right;
+    letter-spacing: .5px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .12s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,.025); }
+  tbody td {
+    padding: 13px 16px;
+    font-size: .88rem;
+    vertical-align: middle;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 700;
+  }
+  .badge-active   { background: rgba(16,185,129,.15); color: var(--emerald); }
+  .badge-inactive { background: rgba(239,68,68,.12);  color: var(--ruby); }
+  .badge-trial    { background: rgba(201,168,76,.12); color: var(--gold); }
+  .badge-basic    { background: rgba(56,189,248,.12); color: var(--sky); }
+  .badge-premium  { background: rgba(167,139,250,.15); color: #a78bfa; }
+
+  /* ── MINI STATS ── */
+  .mini-stats { display: flex; gap: 12px; }
+  .mini-stat {
+    display: flex; flex-direction: column; align-items: center;
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 4px 10px;
+    min-width: 44px;
+  }
+  .mini-stat .v { font-size: .95rem; font-weight: 700; color: var(--text); }
+  .mini-stat .l { font-size: .62rem; color: var(--muted); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 480px;
+    max-width: 95vw;
+    padding: 32px;
+    animation: fadeUp .3s ease;
+  }
+  .modal-title {
+    font-size: 1.15rem; font-weight: 700;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: .82rem; color: var(--muted); margin-bottom: 6px; display: block; }
+  .form-control {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: .9rem;
+    padding: 10px 14px;
+    outline: none;
+    transition: border .2s;
+    text-align: right;
+  }
+  .form-control:focus { border-color: var(--gold); }
+  select.form-control option { background: var(--surface2); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .modal-actions {
+    display: flex; gap: 10px; justify-content: flex-start;
+    margin-top: 24px;
+  }
+
+  /* ── LOADING / EMPTY ── */
+  .loading {
+    text-align: center;
+    padding: 48px;
+    color: var(--muted);
+    font-size: .9rem;
+  }
+  .loading .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    margin: 0 auto 12px;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: .88rem;
+    font-weight: 600;
+    z-index: 999;
+    transition: transform .3s ease;
+    pointer-events: none;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.success { border-color: var(--emerald); color: var(--emerald); }
+  #toast.error   { border-color: var(--ruby);    color: var(--ruby); }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn .25s ease; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ── CONFIRM DIALOG ── */
+  .confirm-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 28px 24px;
+    width: 360px;
+    text-align: center;
+    animation: fadeUp .25s ease;
+  }
+  .confirm-box .icon { font-size: 2.2rem; margin-bottom: 12px; }
+  .confirm-box h3 { font-size: 1.05rem; margin-bottom: 8px; }
+  .confirm-box p { font-size: .85rem; color: var(--muted); margin-bottom: 20px; }
+  .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+  /* ── SEARCH ── */
+  .search-wrap { position: relative; }
+  .search-wrap input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: .88rem;
+    padding: 8px 36px 8px 14px;
+    outline: none;
+    transition: border .2s;
+    width: 220px;
+    text-align: right;
+  }
+  .search-wrap input:focus { border-color: var(--gold); }
+  .search-wrap .icon {
+    position: absolute; right: 11px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted); font-size: .9rem;
+    pointer-events: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ LOGIN ═══════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">نور القرآن</div>
+    <div class="login-sub">لوحة الإدارة العليا</div>
+    <input type="email" id="login-email" placeholder="البريد الإلكتروني" value="super@quran.dev" autocomplete="username">
+    <input type="password" id="login-pass" placeholder="كلمة المرور" value="Admin1234!" autocomplete="current-password">
+    <button class="btn-login" onclick="doLogin()">دخول</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ APP ════════════════════════════════ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="arabic">نور القرآن</div>
+      <div class="sub">Super Admin Panel</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">الرئيسية</div>
+      <div class="nav-item active" data-page="overview" onclick="showPage('overview', this)">
+        <span class="icon">📊</span> نظرة عامة
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">الإدارة</div>
+      <div class="nav-item" data-page="schools" onclick="showPage('schools', this)">
+        <span class="icon">🏫</span> المدارس
+      </div>
+      <div class="nav-item" data-page="users" onclick="showPage('users', this)">
+        <span class="icon">👥</span> المستخدمون
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-badge">
+        <div class="user-avatar">SA</div>
+        <div class="user-info">
+          <div class="name">المدير العام</div>
+          <div class="role">Super Admin</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">تسجيل الخروج</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── OVERVIEW PAGE ── -->
+    <div id="page-overview" class="page active">
+      <div class="page-header">
+        <div>
+          <div class="page-title">نظرة <span>عامة</span></div>
+        </div>
+        <div class="page-date" id="current-date"></div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card gold">
+          <span class="stat-icon">🏫</span>
+          <div class="stat-value" id="stat-schools">—</div>
+          <div class="stat-label">إجمالي المدارس</div>
+        </div>
+        <div class="stat-card green">
+          <span class="stat-icon">👨‍🎓</span>
+          <div class="stat-value" id="stat-students">—</div>
+          <div class="stat-label">إجمالي الطلاب</div>
+        </div>
+        <div class="stat-card blue">
+          <span class="stat-icon">👨‍🏫</span>
+          <div class="stat-value" id="stat-teachers">—</div>
+          <div class="stat-label">إجمالي المعلمين</div>
+        </div>
+        <div class="stat-card red">
+          <span class="stat-icon">📚</span>
+          <div class="stat-value" id="stat-groups">—</div>
+          <div class="stat-label">إجمالي الحلقات</div>
+        </div>
+      </div>
+
+      <!-- Schools summary table -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title"><span class="dot"></span> المدارس النشطة</div>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('schools', document.querySelector('[data-page=schools]'))">
+            عرض الكل ←
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>المدرسة</th>
+                <th>الخطة</th>
+                <th>الطلاب</th>
+                <th>المعلمون</th>
+                <th>الحلقات</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody id="overview-schools-body">
+              <tr><td colspan="6"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCHOOLS PAGE ── -->
+    <div id="page-schools" class="page">
+      <div class="page-header">
+        <div class="page-title">إدارة <span>المدارس</span></div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="search-wrap">
+            <span class="icon">🔍</span>
+            <input type="text" id="school-search" placeholder="بحث..." oninput="filterSchools()">
+          </div>
+          <button class="btn btn-primary" onclick="openSchoolModal()">+ إضافة مدرسة</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>اسم المدرسة</th>
+              <th>المدينة</th>
+              <th>الخطة</th>
+              <th>الطلاب</th>
+              <th>المعلمون</th>
+              <th>الحلقات</th>
+              <th>الحالة</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="schools-body">
+            <tr><td colspan="8"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── USERS PAGE ── -->
+    <div id="page-users" class="page">
+      <div class="page-header">
+        <div class="page-title">إدارة <span>المستخدمين</span></div>
+        <button class="btn btn-primary btn-sm" onclick="openUserModal()">➕ مستخدم جديد</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <input class="form-control" id="user-search" placeholder="🔍 بحث بالاسم أو البريد..." oninput="filterUsers()" style="max-width:280px">
+        <select class="form-control" id="user-role-filter" onchange="filterUsers()" style="max-width:180px">
+          <option value="">كل الأدوار</option>
+          <option value="super_admin">مدير النظام</option>
+          <option value="school_admin">مدير مدرسة</option>
+          <option value="teacher">معلم</option>
+          <option value="supervisor">مشرف</option>
+          <option value="accountant">محاسب</option>
+        </select>
+        <select class="form-control" id="user-school-filter" onchange="filterUsers()" style="max-width:200px">
+          <option value="">كل المدارس</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>المستخدم</th>
+                <th>البريد الإلكتروني</th>
+                <th>الدور</th>
+                <th>المدرسة</th>
+                <th>الحالة</th>
+                <th>تاريخ الإنشاء</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="users-body">
+              <tr><td colspan="7"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── SCHOOL MODAL ── -->
+<div class="modal-overlay" id="school-modal">
+  <div class="modal">
+    <div class="modal-title">🏫 <span id="modal-title-text">إضافة مدرسة جديدة</span></div>
+    <input type="hidden" id="modal-school-id">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">اسم المدرسة *</label>
+        <input class="form-control" id="f-name" placeholder="مدرسة نور القرآن">
+      </div>
+      <div class="form-group">
+        <label class="form-label">المدينة</label>
+        <input class="form-control" id="f-city" placeholder="الجزائر">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">الدولة</label>
+        <select class="form-control" id="f-country">
+          <option value="DZ">الجزائر</option>
+          <option value="SA">السعودية</option>
+          <option value="MA">المغرب</option>
+          <option value="TN">تونس</option>
+          <option value="EG">مصر</option>
+          <option value="AE">الإمارات</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">الخطة</label>
+        <select class="form-control" id="f-plan">
+          <option value="trial">تجريبية</option>
+          <option value="basic">أساسية</option>
+          <option value="premium">مميزة</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">الرسوم الشهرية الافتراضية (دج)</label>
+      <input class="form-control" id="f-fee" type="number" placeholder="0" min="0">
+    </div>
+
+    <div class="form-group" id="f-active-wrap" style="display:none;">
+      <label class="form-label">حالة المدرسة</label>
+      <select class="form-control" id="f-active">
+        <option value="true">نشطة</option>
+        <option value="false">معطلة</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveSchool()">💾 حفظ</button>
+      <button class="btn btn-ghost" onclick="closeModal('school-modal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM MODAL ── -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="confirm-box">
+    <div class="icon">⚠️</div>
+    <h3 id="confirm-title">تأكيد الإجراء</h3>
+    <p id="confirm-msg">هل أنت متأكد؟</p>
+    <div class="confirm-actions">
+      <button class="btn btn-danger" id="confirm-yes">تأكيد</button>
+      <button class="btn btn-ghost" onclick="closeModal('confirm-modal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════ CONFIG ═══════════════════════════════
+const API = 'http://localhost:8080';
+let token = localStorage.getItem('sa_token') || '';
+let schoolsCache = [];
+
+// ═══════════════════════════════ AUTH ════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'فشل تسجيل الدخول'; return; }
+
+    token = data.access_token;
+    localStorage.setItem('sa_token', token);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initApp();
+  } catch(e) {
+    errEl.textContent = 'تعذر الاتصال بالخادم';
+  }
+}
+
+function doLogout() {
+  fetch(`${API}/auth/logout`, { method:'POST', headers: authHeaders() }).catch(()=>{});
+  localStorage.removeItem('sa_token');
+  token = '';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// Auto-login if token exists
+if (token) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  initApp();
+}
+
+// ═══════════════════════════════ HELPERS ══════════════════════════════
+function authHeaders() {
+  return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+}
+
+async function apiFetch(path, opts={}) {
+  const res = await fetch(`${API}${path}`, { ...opts, headers: { ...authHeaders(), ...(opts.headers||{}) } });
+  if (res.status === 401) { doLogout(); return null; }
+  return res;
+}
+
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  setTimeout(() => el.className = '', 2800);
+}
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'schools') loadSchools();
+  if (name === 'users') loadUsers();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ═══════════════════════════════ INIT ════════════════════════════════
+function initApp() {
+  // Date
+  document.getElementById('current-date').textContent =
+    new Date().toLocaleDateString('ar-DZ', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  loadOverview();
+}
+
+// ═══════════════════════════════ OVERVIEW ════════════════════════════
+async function loadOverview() {
+  const res = await apiFetch('/schools');
+  if (!res) return;
+  const data = await res.json();
+  const schools = data.data || [];
+  schoolsCache = schools;
+
+  // Totals
+  let students=0, teachers=0, groups=0;
+  schools.forEach(s => {
+    students += s.student_count || 0;
+    teachers += s.teacher_count || 0;
+    groups   += s.group_count   || 0;
+  });
+
+  document.getElementById('stat-schools').textContent  = schools.length;
+  document.getElementById('stat-students').textContent = students;
+  document.getElementById('stat-teachers').textContent = teachers;
+  document.getElementById('stat-groups').textContent   = groups;
+
+  // Overview table (active only)
+  const tbody = document.getElementById('overview-schools-body');
+  const active = schools.filter(s => s.is_active);
+  if (!active.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">🏫</div><p>لا توجد مدارس نشطة</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = active.map(s => `
+    <tr>
+      <td><strong>${s.name}</strong>${s.city ? `<br><small style="color:var(--muted)">${s.city}</small>` : ''}</td>
+      <td>${planBadge(s.plan)}</td>
+      <td style="color:var(--emerald);font-weight:700">${s.student_count}</td>
+      <td style="color:var(--sky);font-weight:700">${s.teacher_count}</td>
+      <td style="color:var(--gold);font-weight:700">${s.group_count}</td>
+      <td>${s.is_active ? '<span class="badge badge-active">نشطة</span>' : '<span class="badge badge-inactive">معطلة</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════ SCHOOLS ══════════════════════════════
+async function loadSchools() {
+  const tbody = document.getElementById('schools-body');
+  tbody.innerHTML = `<tr><td colspan="8"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></td></tr>`;
+
+  const res = await apiFetch('/schools');
+  if (!res) return;
+  const data = await res.json();
+  schoolsCache = data.data || [];
+  renderSchoolsTable(schoolsCache);
+}
+
+function renderSchoolsTable(schools) {
+  const tbody = document.getElementById('schools-body');
+  if (!schools.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🏫</div><p>لا توجد مدارس</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = schools.map(s => `
+    <tr>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.city || '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${planBadge(s.plan)}</td>
+      <td>
+        <div class="mini-stats">
+          <div class="mini-stat"><span class="v">${s.student_count}</span><span class="l">طالب</span></div>
+        </div>
+      </td>
+      <td>
+        <div class="mini-stats">
+          <div class="mini-stat"><span class="v">${s.teacher_count}</span><span class="l">معلم</span></div>
+        </div>
+      </td>
+      <td>
+        <div class="mini-stats">
+          <div class="mini-stat"><span class="v">${s.group_count}</span><span class="l">حلقة</span></div>
+        </div>
+      </td>
+      <td>${s.is_active ? '<span class="badge badge-active">نشطة</span>' : '<span class="badge badge-inactive">معطلة</span>'}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openSchoolModal('${s.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmToggle('${s.id}','${s.name}',${s.is_active})">
+            ${s.is_active ? '🔒' : '🔓'}
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterSchools() {
+  const q = document.getElementById('school-search').value.toLowerCase();
+  const filtered = schoolsCache.filter(s =>
+    s.name.toLowerCase().includes(q) || (s.city||'').toLowerCase().includes(q)
+  );
+  renderSchoolsTable(filtered);
+}
+
+function planBadge(plan) {
+  const map = { trial:'badge-trial تجريبية', basic:'badge-basic أساسية', premium:'badge-premium مميزة' };
+  const [cls, label] = (map[plan]||'badge-trial تجريبية').split(' ');
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+// ── SCHOOL MODAL ──
+function openSchoolModal(id) {
+  const modal = document.getElementById('school-modal');
+  document.getElementById('modal-school-id').value = id || '';
+  document.getElementById('f-active-wrap').style.display = id ? 'block' : 'none';
+
+  if (id) {
+    const sc = schoolsCache.find(s => s.id === id);
+    document.getElementById('modal-title-text').textContent = 'تعديل المدرسة';
+    document.getElementById('f-name').value    = sc.name || '';
+    document.getElementById('f-city').value    = sc.city || '';
+    document.getElementById('f-country').value = sc.country || 'DZ';
+    document.getElementById('f-plan').value    = sc.plan || 'trial';
+    document.getElementById('f-fee').value     = sc.default_monthly_fee || 0;
+    document.getElementById('f-active').value  = String(sc.is_active);
+  } else {
+    document.getElementById('modal-title-text').textContent = 'إضافة مدرسة جديدة';
+    document.getElementById('f-name').value    = '';
+    document.getElementById('f-city').value    = '';
+    document.getElementById('f-country').value = 'DZ';
+    document.getElementById('f-plan').value    = 'trial';
+    document.getElementById('f-fee').value     = '';
+  }
+  modal.classList.add('open');
+}
+
+async function saveSchool() {
+  const id   = document.getElementById('modal-school-id').value;
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('اسم المدرسة مطلوب', 'error'); return; }
+
+  const body = {
+    name,
+    city:    document.getElementById('f-city').value.trim() || null,
+    country: document.getElementById('f-country').value,
+    plan:    document.getElementById('f-plan').value,
+    default_monthly_fee: parseFloat(document.getElementById('f-fee').value) || 0,
+  };
+  if (id) body.is_active = document.getElementById('f-active').value === 'true';
+
+  const res = await apiFetch(id ? `/schools/${id}` : '/schools', {
+    method: id ? 'PUT' : 'POST',
+    body: JSON.stringify(body)
+  });
+  if (!res) return;
+  if (!res.ok) {
+    const err = await res.json();
+    toast(err.error || 'حدث خطأ', 'error');
+    return;
+  }
+  closeModal('school-modal');
+  toast(id ? '✅ تم تحديث المدرسة' : '✅ تمت إضافة المدرسة');
+  loadSchools();
+  loadOverview();
+}
+
+// ── TOGGLE ACTIVE ──
+function confirmToggle(id, name, isActive) {
+  document.getElementById('confirm-title').textContent = isActive ? 'تعطيل المدرسة' : 'تفعيل المدرسة';
+  document.getElementById('confirm-msg').textContent =
+    isActive ? `هل تريد تعطيل "${name}"؟` : `هل تريد إعادة تفعيل "${name}"؟`;
+  document.getElementById('confirm-yes').onclick = () => toggleSchool(id, !isActive);
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+async function toggleSchool(id, newActive) {
+  closeModal('confirm-modal');
+  const res = await apiFetch(`/schools/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ is_active: newActive })
+  });
+  if (!res || !res.ok) { toast('حدث خطأ', 'error'); return; }
+  toast(newActive ? '✅ تم تفعيل المدرسة' : '🔒 تم تعطيل المدرسة');
+  loadSchools();
+  loadOverview();
+}
+
+
+// ═══════════════════════════════ USERS ════════════════════════════════
+let usersCache = [];
+
+async function loadUsers() {
+  const tbody = document.getElementById('users-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7"><div class="loading"><div class="spinner"></div>جاري التحميل...</div></td></tr>';
+
+  const res = await apiFetch('/users?limit=200');
+  if (!res) return;
+  const data = await res.json();
+  usersCache = data.data || [];
+
+  // populate school filter
+  const schoolSel = document.getElementById('user-school-filter');
+  if (schoolSel && schoolsCache.length) {
+    const existing = [...schoolSel.options].map(o => o.value);
+    schoolsCache.forEach(s => {
+      if (!existing.includes(s.id)) {
+        const opt = document.createElement('option');
+        opt.value = s.id; opt.textContent = s.name;
+        schoolSel.appendChild(opt);
+      }
+    });
+  }
+
+  renderUsersTable(usersCache);
+}
+
+const ROLE_LABELS = {
+  super_admin: 'مدير النظام', school_admin: 'مدير مدرسة',
+  teacher: 'معلم', supervisor: 'مشرف', accountant: 'محاسب'
+};
+const ROLE_COLORS = {
+  super_admin: 'badge-premium', school_admin: 'badge-basic',
+  teacher: 'badge-active', supervisor: 'badge-trial', accountant: 'badge-inactive'
+};
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('users-body');
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">👤</div><p>لا يوجد مستخدمون</p></div></td></tr>';
+    return;
+  }
+  const schoolMap = {};
+  schoolsCache.forEach(s => schoolMap[s.id] = s.name);
+
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><strong>${u.full_name}</strong></td>
+      <td dir="ltr" style="font-size:12px;color:var(--text-muted)">${u.email}</td>
+      <td><span class="badge ${ROLE_COLORS[u.role]||'badge-trial'}">${ROLE_LABELS[u.role]||u.role}</span></td>
+      <td>${u.school_id ? (schoolMap[u.school_id] || u.school_id.slice(0,8)+'…') : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${u.is_active ? '<span class="badge badge-active">نشط</span>' : '<span class="badge badge-inactive">معطل</span>'}</td>
+      <td style="font-size:12px;color:var(--muted)">${new Date(u.created_at).toLocaleDateString('ar-DZ')}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openUserModal('${u.id}')">✏️</button>
+          ${u.role !== 'super_admin' ? `<button class="btn btn-danger btn-sm" onclick="confirmArchiveUser('${u.id}','${u.full_name.replace(/'/g,"\'")}')">🗑️</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterUsers() {
+  const q    = (document.getElementById('user-search')?.value || '').toLowerCase();
+  const role = document.getElementById('user-role-filter')?.value || '';
+  const school = document.getElementById('user-school-filter')?.value || '';
+  const filtered = usersCache.filter(u =>
+    (!q      || u.full_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)) &&
+    (!role   || u.role === role) &&
+    (!school || u.school_id === school)
+  );
+  renderUsersTable(filtered);
+}
+
+function openUserModal(id) {
+  document.getElementById('u-id').value = id || '';
+  document.getElementById('u-pass-wrap').style.display   = id ? 'none' : 'block';
+  document.getElementById('u-active-wrap').style.display = id ? 'block' : 'none';
+  document.getElementById('user-modal-title').textContent = id ? 'تعديل مستخدم' : 'إضافة مستخدم جديد';
+
+  // populate school dropdown
+  const sel = document.getElementById('u-school');
+  sel.innerHTML = '<option value="">— بلا مدرسة —</option>' +
+    schoolsCache.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+  if (id) {
+    const u = usersCache.find(x => x.id === id);
+    if (!u) return;
+    document.getElementById('u-name').value   = u.full_name || '';
+    document.getElementById('u-email').value  = u.email || '';
+    document.getElementById('u-role').value   = u.role || 'teacher';
+    document.getElementById('u-school').value = u.school_id || '';
+    document.getElementById('u-active').value = String(u.is_active);
+  } else {
+    document.getElementById('u-name').value     = '';
+    document.getElementById('u-email').value    = '';
+    document.getElementById('u-role').value     = 'teacher';
+    document.getElementById('u-school').value   = '';
+    document.getElementById('u-password').value = '';
+  }
+  document.getElementById('user-modal').classList.add('open');
+}
+
+async function saveUser() {
+  const id   = document.getElementById('u-id').value;
+  const name = document.getElementById('u-name').value.trim();
+  const email= document.getElementById('u-email').value.trim();
+  if (!name)  { toast('الاسم مطلوب', 'error'); return; }
+  if (!email) { toast('البريد مطلوب', 'error'); return; }
+
+  const schoolVal = document.getElementById('u-school').value;
+
+  let res;
+  if (id) {
+    const body = {
+      full_name: name,
+      email,
+      is_active: document.getElementById('u-active').value === 'true',
+    };
+    res = await apiFetch(`/users/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+  } else {
+    const pass = document.getElementById('u-password').value.trim();
+    if (!pass) { toast('كلمة المرور مطلوبة', 'error'); return; }
+    const body = {
+      full_name: name,
+      email,
+      password: pass,
+      role: document.getElementById('u-role').value,
+      school_id: schoolVal || null,
+    };
+    res = await apiFetch('/users', { method: 'POST', body: JSON.stringify(body) });
+  }
+
+  if (!res) return;
+  if (!res.ok) {
+    const err = await res.json();
+    toast(err.error || 'حدث خطأ', 'error');
+    return;
+  }
+  closeModal('user-modal');
+  toast(id ? '✅ تم تحديث المستخدم' : '✅ تمت إضافة المستخدم');
+  loadUsers();
+}
+
+function confirmArchiveUser(id, name) {
+  document.getElementById('archive-user-msg').textContent = `هل تريد أرشفة "${name}"؟ لن يتمكن من تسجيل الدخول.`;
+  document.getElementById('archive-user-yes').onclick = () => archiveUser(id);
+  document.getElementById('archive-user-modal').classList.add('open');
+}
+
+async function archiveUser(id) {
+  closeModal('archive-user-modal');
+  const res = await apiFetch(`/users/${id}/archive`, { method: 'PATCH' });
+  if (!res || !res.ok) { toast('حدث خطأ', 'error'); return; }
+  toast('✅ تم أرشفة المستخدم');
+  loadUsers();
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+</script>
+
+<!-- ── USER MODAL ── -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal">
+    <div class="modal-title">👤 <span id="user-modal-title">إضافة مستخدم جديد</span></div>
+    <input type="hidden" id="u-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">الاسم الكامل *</label>
+        <input class="form-control" id="u-name" placeholder="أحمد محمد">
+      </div>
+      <div class="form-group">
+        <label class="form-label">البريد الإلكتروني *</label>
+        <input class="form-control" id="u-email" type="email" dir="ltr" placeholder="user@school.dz">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">الدور *</label>
+        <select class="form-control" id="u-role">
+          <option value="school_admin">مدير مدرسة</option>
+          <option value="teacher">معلم</option>
+          <option value="supervisor">مشرف</option>
+          <option value="accountant">محاسب</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">المدرسة</label>
+        <select class="form-control" id="u-school">
+          <option value="">— بلا مدرسة —</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" id="u-pass-wrap">
+      <label class="form-label">كلمة المرور *</label>
+      <input class="form-control" id="u-password" type="password" placeholder="8 أحرف على الأقل">
+    </div>
+    <div class="form-group" id="u-active-wrap" style="display:none">
+      <label class="form-label">الحالة</label>
+      <select class="form-control" id="u-active">
+        <option value="true">نشط</option>
+        <option value="false">معطل</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-ghost" onclick="closeModal('user-modal')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveUser()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ARCHIVE USER CONFIRM ── -->
+<div class="modal-overlay" id="archive-user-modal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-title">⚠️ تأكيد الأرشفة</div>
+    <p id="archive-user-msg" style="color:var(--text-muted);margin:12px 0 20px"></p>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('archive-user-modal')">إلغاء</button>
+      <button class="btn btn-danger" id="archive-user-yes">أرشفة</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# ============================================================
+#  deploy/scripts/make_backup_cron.txt
+#  أسطر crontab جاهزة للنسخ إلى crontab على الـ VPS
+#
+#  إضافة عبر:
+#    crontab -e
+#  ثم الصق الأسطر التالية (عدّل المسار حسب موقع المشروع)
+# ============================================================
+
+# المسار الكامل لمجلد المشروع على الـ VPS
+# PROJECT_DIR=/home/quran/quran-api-prod
+
+# ── Backup يومي الساعة 3 صباحاً ──────────────────────────────
+0 3 * * * /home/quran/quran-api-prod/deploy/scripts/backup_postgres.sh >> /var/log/quran_backup.log 2>&1
+
+# ── تنظيف logs أسبوعياً (الأحد 4 صباحاً) ────────────────────
+0 4 * * 0 /home/quran/quran-api-prod/deploy/scripts/rotate_logs.sh >> /var/log/quran_logs.log 2>&1
+
+# ── تجديد شهادة TLS (تلقائي عبر certbot) ────────────────────
+# certbot يجدد تلقائياً عند التثبيت — هذا السطر للتأكيد فقط
+0 12 * * * certbot renew --quiet && docker exec quran_nginx_prod nginx -s reload

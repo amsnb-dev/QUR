@@ -1,0 +1,48 @@
+﻿version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: quran_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       quran_school
+      POSTGRES_USER:     quran
+      POSTGRES_PASSWORD: quran_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quran -d quran_school"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quran_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT:                 8080
+      ENV:                  development
+      DB_URL:               postgres://quran_app:quran_app_pass@postgres:5432/quran_school?sslmode=disable
+      MIGRATE_DB_URL:       postgres://quran:quran_secret@postgres:5432/quran_school?sslmode=disable
+      JWT_SECRET:           dev_jwt_secret_change_in_production
+      JWT_REFRESH_SECRET:   dev_refresh_secret_change_in_production
+      JWT_ACCESS_TTL_MIN:   15
+      JWT_REFRESH_TTL_DAYS: 7
+      MIGRATIONS_DIR:       /migrations
+      RUN_MIGRATIONS:       ${RUN_MIGRATIONS:-false}
+    volumes:
+      - ./migrations:/migrations:ro
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
